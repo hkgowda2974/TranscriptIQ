@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+env/
+venv/
+.chroma/
+*.log
+.pytest_cache/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+.DS_Store
+*.local

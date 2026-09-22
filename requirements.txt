@@ -1,0 +1,10 @@
+fastapi==0.110.0
+uvicorn==0.28.0
+pydantic==2.6.4
+streamlit==1.32.2
+google-genai>=0.1.1
+python-dotenv==1.0.1
+chromadb==0.4.24
+pytest==8.1.1
+requests==2.31.0
+numpy>=1.24.0

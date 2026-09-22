@@ -1,0 +1,39 @@
+Expert 1 – Dr. Jean-Luc Dubois
+Role: Chief of Surgical Services & Urology Specialist
+Market: France
+
+00:00
+Interviewer: How would you describe current adoption of robotic surgery in your market?
+
+00:15
+Dr. Dubois: Adoption in France is maturing steadily in public university hospitals (CHUs), but private clinics are adopting much faster due to competitive pressure and patient demand for minimally invasive options. Overall adoption is around 35 percent in high-volume centers.
+
+01:00
+Interviewer: What are the main barriers to adoption?
+
+01:08
+Dr. Dubois: The initial capital investment remains high, but reimbursement restrictions under the French national health system (Sécurité Sociale) present the biggest hurdle. Without dedicated DRG top-up tariffs for robotic procedures, hospitals absorb the per-case instrument costs.
+
+02:00
+Interviewer: How important are hospital budgets and ROI in purchasing decisions?
+
+02:07
+Dr. Dubois: Crucial for private clinics where margin matters directly. For public hospitals, return on investment is evaluated over a 5 to 7 year horizon based on length-of-stay reduction and complication rate decreases rather than short-term cash flow.
+
+03:00
+Interviewer: How important are surgeon training and clinical outcomes?
+
+03:06
+Dr. Dubois: Clinical outcomes are the primary justification for getting committee approval, but training is the bottleneck. Proctorship and simulation requirements mean a surgeon needs 30 to 50 supervised cases before operating independently.
+
+04:00
+Interviewer: What adoption trend do you expect over the next 3–5 years?
+
+04:06
+Dr. Dubois: I expect adoption to expand by 12 to 18 percent annually. As secondary regional hospitals purchase multi-specialty systems and new multi-port competitors enter the market, price pressure will lower entry barriers.
+
+05:00
+Interviewer: What is the typical hospital decision-making timeline for purchasing a new robotic system?
+
+05:05
+Dr. Dubois: Six to nine months is realistic once the hospital becomes serious. It can be longer if the capital committee pushes the purchase into the next budget cycle.
