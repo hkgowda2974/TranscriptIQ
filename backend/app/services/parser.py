@@ -21,19 +21,24 @@ def normalize_timestamp(timestamp_str: str) -> str:
     return ts
 
 
-def parse_interview_guide(guide_content_or_path: str) -> Tuple[str, List[InterviewQuestion]]:
+def parse_interview_guide(guide_content_or_path: Any) -> Tuple[str, List[InterviewQuestion]]:
     """
     Parses an interview guide string or file path to extract the project objective
     and a structured list of canonical questions.
     """
-    text_content = guide_content_or_path
-    guide_path = Path(guide_content_or_path)
-    if guide_path.exists() and guide_path.is_file():
-        try:
-            text_content = guide_path.read_text(encoding="utf-8")
-        except Exception as e:
-            logger.error(f"Error reading interview guide file {guide_path}: {e}")
-            raise
+    if isinstance(guide_content_or_path, Path):
+        text_content = guide_content_or_path.read_text(encoding="utf-8")
+    elif isinstance(guide_content_or_path, str):
+        text_content = guide_content_or_path
+        if "\n" not in guide_content_or_path and len(guide_content_or_path) < 4096:
+            try:
+                guide_path = Path(guide_content_or_path)
+                if guide_path.exists() and guide_path.is_file():
+                    text_content = guide_path.read_text(encoding="utf-8")
+            except (OSError, ValueError):
+                pass
+    else:
+        text_content = str(guide_content_or_path)
 
     objective = ""
     questions: List[InterviewQuestion] = []
@@ -61,23 +66,29 @@ def parse_interview_guide(guide_content_or_path: str) -> Tuple[str, List[Intervi
     return objective, questions
 
 
-def parse_transcript(transcript_content_or_path: str, filename_hint: str = "") -> Dict[str, Any]:
+def parse_transcript(transcript_content_or_path: Any, filename_hint: str = "") -> Dict[str, Any]:
     """
     Parses a raw transcript string or file path into expert metadata and an ordered sequence
     of timestamped speaker turns.
     """
-    text_content = transcript_content_or_path
     source_filename = filename_hint
-    
-    file_path = Path(transcript_content_or_path)
-    if file_path.exists() and file_path.is_file():
-        try:
-            text_content = file_path.read_text(encoding="utf-8")
-            if not source_filename:
-                source_filename = file_path.name
-        except Exception as e:
-            logger.error(f"Error reading transcript file {file_path}: {e}")
-            raise
+    if isinstance(transcript_content_or_path, Path):
+        text_content = transcript_content_or_path.read_text(encoding="utf-8")
+        if not source_filename:
+            source_filename = transcript_content_or_path.name
+    elif isinstance(transcript_content_or_path, str):
+        text_content = transcript_content_or_path
+        if "\n" not in transcript_content_or_path and len(transcript_content_or_path) < 4096:
+            try:
+                file_path = Path(transcript_content_or_path)
+                if file_path.exists() and file_path.is_file():
+                    text_content = file_path.read_text(encoding="utf-8")
+                    if not source_filename:
+                        source_filename = file_path.name
+            except (OSError, ValueError):
+                pass
+    else:
+        text_content = str(transcript_content_or_path)
 
     if not source_filename:
         source_filename = "transcript.txt"
