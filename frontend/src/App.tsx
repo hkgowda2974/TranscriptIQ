@@ -44,7 +44,10 @@ export function App() {
     setActiveView('explorer');
   };
 
+  const [chatSessionId, setChatSessionId] = useState<number>(0);
+
   const handleNewChat = () => {
+    setChatSessionId((prev) => prev + 1);
     setActiveView('chat');
   };
 
@@ -67,6 +70,7 @@ export function App() {
           {/* View 1: Grounded Chat */}
           {activeView === 'chat' && (
             <ChatInterface
+              key={chatSessionId}
               onOpenExplorer={handleOpenExplorer}
               onTranscriptUploaded={loadData}
             />
