@@ -21,6 +21,28 @@ A production-grade, grounded RAG application that ingests expert-call transcript
 
 ---
 
+## High-Level Workflow
+
+```mermaid
+flowchart LR
+    A["1. 📄 Raw Transcripts"] --> B["2. ✂️ Parse & Tag\n(Speaker, Time, Turn)"]
+    B --> C["3. 🔍 Search & Verify\n(Matches facts, stops hallucinations)"]
+    C --> D["4. 💬 TranscriptIQ UI\n(Answer + Exact Quote + Timestamp)"]
+
+    style A fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px
+    style B fill:#ede9fe,stroke:#6d28d9,stroke-width:2px
+    style C fill:#fae8ff,stroke:#a21caf,stroke-width:2px
+    style D fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+```
+
+```text
+[1. Raw Transcripts] ──► [2. Parse & Tag] ──► [3. Search & Verify] ──► [4. Final Answer in UI]
+• Expert Audio/Text       • Speaker Name       • Finds relevant turns   • Grounded Response
+• Interview Guide         • Timestamps         • Blocks hallucinations  • Verbatim Quotes & Time
+```
+
+---
+
 ## Technical Architecture
 
 ```text
