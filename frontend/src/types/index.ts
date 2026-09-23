@@ -32,7 +32,7 @@ export interface ChatMessageItem {
 export interface ChatSession {
   id: string;
   title: string;
-  timestamp: Date;
+  timestamp: string | Date | number;
   messages: ChatMessageItem[];
 }
 

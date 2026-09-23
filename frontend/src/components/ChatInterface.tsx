@@ -6,15 +6,27 @@ import { ShinyText } from './ShinyText';
 import { streamChatAnswer, uploadTranscriptFile } from '../services/api';
 
 interface ChatInterfaceProps {
+  currentMessages: ChatMessageItem[];
+  onSaveMessages: (messages: ChatMessageItem[]) => void;
   onOpenExplorer: (filename: string, timestamp: string) => void;
   onTranscriptUploaded?: () => void;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenExplorer, onTranscriptUploaded }) => {
-  const [messages, setMessages] = useState<ChatMessageItem[]>([]);
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  currentMessages,
+  onSaveMessages,
+  onOpenExplorer,
+  onTranscriptUploaded,
+}) => {
+  const [messages, setMessages] = useState<ChatMessageItem[]>(currentMessages || []);
   const [inputQuery, setInputQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+
+  // Sync when active session changes
+  useEffect(() => {
+    setMessages(currentMessages || []);
+  }, [currentMessages]);
 
   // Upload feedback toast state
   const [uploadToast, setUploadToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -62,7 +74,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenExplorer, on
       isStreaming: true,
     };
 
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    const initialMsgs = [...messages, userMsg, assistantMsg];
+    setMessages(initialMsgs);
+    onSaveMessages(initialMsgs);
     setInputQuery('');
     setIsGenerating(true);
 
@@ -83,8 +97,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenExplorer, on
           );
         },
         (payload) => {
-          setMessages((prev) =>
-            prev.map((msg) =>
+          setMessages((prev) => {
+            const updated = prev.map((msg) =>
               msg.id === assistantMsgId
                 ? {
                     ...msg,
@@ -94,24 +108,28 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenExplorer, on
                     isStreaming: false,
                   }
                 : msg
-            )
-          );
+            );
+            onSaveMessages(updated);
+            return updated;
+          });
         },
         controller.signal
       );
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        setMessages((prev) =>
-          prev.map((msg) =>
+        setMessages((prev) => {
+          const updated = prev.map((msg) =>
             msg.id === assistantMsgId
               ? {
                   ...msg,
-                  content: "I couldn't find sufficient evidence in the provided transcripts to answer this question.",
+                  content: "Unable to connect to the backend server. Please verify the Render service is running and retry.",
                   isStreaming: false,
                 }
               : msg
-          )
-        );
+          );
+          onSaveMessages(updated);
+          return updated;
+        });
       }
     } finally {
       setIsGenerating(false);

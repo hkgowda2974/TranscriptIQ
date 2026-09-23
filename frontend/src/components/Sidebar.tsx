@@ -15,8 +15,9 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   FileText,
+  Trash2,
 } from 'lucide-react';
-import { ActiveView, ExpertMetadata } from '../types';
+import { ActiveView, ExpertMetadata, ChatSession } from '../types';
 
 interface SidebarProps {
   activeView: ActiveView;
@@ -26,6 +27,10 @@ interface SidebarProps {
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
   onOpenExpertInExplorer: (filename: string) => void;
+  sessions: ChatSession[];
+  activeSessionId: string;
+  onSelectSession: (id: string) => void;
+  onDeleteSession: (id: string) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -36,20 +41,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   darkMode,
   setDarkMode,
   onOpenExpertInExplorer,
+  sessions,
+  activeSessionId,
+  onSelectSession,
+  onDeleteSession,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [deepDiveOpen, setDeepDiveOpen] = useState<boolean>(true);
   const [chatHistoryOpen, setChatHistoryOpen] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const chatHistory = [
-    { id: '1', title: 'Adoption barriers across markets' },
-    { id: '2', title: 'Reimbursement rules in France' },
-    { id: '3', title: 'Surgeon training & utilization ROI' },
-  ];
-
-  const filteredHistory = chatHistory.filter((c) =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredHistory = sessions.filter((s) =>
+    s.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -282,16 +285,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {chatHistoryOpen && (
                 <div className="space-y-1 mt-1">
-                  {filteredHistory.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveView('chat')}
-                      className="w-full flex items-center justify-between py-2 px-2.5 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-xl group transition-all"
-                    >
-                      <span className="truncate pr-2">{item.title}</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
-                    </button>
-                  ))}
+                  {filteredHistory.length === 0 ? (
+                    <div className="px-2.5 py-2 text-[11px] text-slate-400 italic">
+                      No conversations yet
+                    </div>
+                  ) : (
+                    filteredHistory.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => onSelectSession(item.id)}
+                        className={`w-full flex items-center justify-between py-2 px-2.5 text-xs rounded-xl group transition-all cursor-pointer ${
+                          activeView === 'chat' && activeSessionId === item.id
+                            ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium border border-blue-200/60 dark:border-blue-800/60'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate pr-1">
+                          <MessageSquare className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 flex-shrink-0" />
+                          <span className="truncate">{item.title}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteSession(item.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded transition flex-shrink-0"
+                          title="Delete chat"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>

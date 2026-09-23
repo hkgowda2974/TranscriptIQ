@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ActiveView, ExpertMetadata, InterviewQuestion } from './types';
+import { ActiveView, ExpertMetadata, InterviewQuestion, ChatSession, ChatMessageItem } from './types';
 import { Sidebar } from './components/Sidebar';
 import { ChatInterface } from './components/ChatInterface';
 import { InterviewGuideView } from './components/InterviewGuideView';
@@ -7,6 +7,31 @@ import { ThemesDisagreementsView } from './components/ThemesDisagreementsView';
 import { TranscriptExplorerView } from './components/TranscriptExplorerView';
 import { fetchTranscripts } from './services/api';
 import { BookOpen, FileSpreadsheet, Sparkles, FileText, ArrowRight, Building2 } from 'lucide-react';
+
+const STORAGE_KEY = 'transcriptiq_chat_sessions_v1';
+
+function getInitialSessions(): ChatSession[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Error loading chat sessions:', e);
+  }
+  const defaultId = 'session_' + Date.now();
+  return [
+    {
+      id: defaultId,
+      title: 'New Conversation',
+      timestamp: new Date().toISOString(),
+      messages: [],
+    },
+  ];
+}
 
 export function App() {
   const [activeView, setActiveView] = useState<ActiveView>('chat');
@@ -16,6 +41,18 @@ export function App() {
   const [explorerTarget, setExplorerTarget] = useState<{ doc: string; timestamp?: string }>({
     doc: 'expert_1.txt',
   });
+
+  const [sessions, setSessions] = useState<ChatSession[]>(getInitialSessions);
+  const [activeSessionId, setActiveSessionId] = useState<string>(() => sessions[0]?.id || 'default');
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    } catch (e) {
+      console.error('Error saving sessions:', e);
+    }
+  }, [sessions]);
 
   const loadData = () => {
     fetchTranscripts()
@@ -44,12 +81,73 @@ export function App() {
     setActiveView('explorer');
   };
 
-  const [chatSessionId, setChatSessionId] = useState<number>(0);
-
   const handleNewChat = () => {
-    setChatSessionId((prev) => prev + 1);
+    // If the current active session is already clean/empty, just remain on it
+    const current = sessions.find((s) => s.id === activeSessionId);
+    if (current && current.messages.length === 0) {
+      setActiveView('chat');
+      return;
+    }
+    const newId = 'session_' + Date.now();
+    const newSession: ChatSession = {
+      id: newId,
+      title: 'New Conversation',
+      timestamp: new Date().toISOString(),
+      messages: [],
+    };
+    setSessions((prev) => [newSession, ...prev]);
+    setActiveSessionId(newId);
     setActiveView('chat');
   };
+
+  const handleSelectSession = (id: string) => {
+    setActiveSessionId(id);
+    setActiveView('chat');
+  };
+
+  const handleDeleteSession = (id: string) => {
+    setSessions((prev) => {
+      const filtered = prev.filter((s) => s.id !== id);
+      if (filtered.length === 0) {
+        const freshId = 'session_' + Date.now();
+        const fresh: ChatSession = {
+          id: freshId,
+          title: 'New Conversation',
+          timestamp: new Date().toISOString(),
+          messages: [],
+        };
+        setActiveSessionId(freshId);
+        return [fresh];
+      }
+      if (activeSessionId === id) {
+        setActiveSessionId(filtered[0].id);
+      }
+      return filtered;
+    });
+  };
+
+  const handleSaveMessages = (newMessages: ChatMessageItem[]) => {
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id !== activeSessionId) return s;
+        let title = s.title;
+        if (title === 'New Conversation' || !title) {
+          const firstUserMsg = newMessages.find((m) => m.role === 'user');
+          if (firstUserMsg) {
+            title = firstUserMsg.content.slice(0, 36) + (firstUserMsg.content.length > 36 ? '...' : '');
+          }
+        }
+        return {
+          ...s,
+          title,
+          messages: newMessages,
+          timestamp: new Date().toISOString(),
+        };
+      })
+    );
+  };
+
+  const currentSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
 
   return (
     <div className={`flex h-screen w-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
@@ -63,6 +161,10 @@ export function App() {
           darkMode={darkMode}
           setDarkMode={setDarkMode}
           onOpenExpertInExplorer={(doc) => handleOpenExplorer(doc)}
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          onSelectSession={handleSelectSession}
+          onDeleteSession={handleDeleteSession}
         />
 
         {/* Main Content View Container with visible Soft Pastel Gradient Background */}
@@ -70,7 +172,9 @@ export function App() {
           {/* View 1: Grounded Chat */}
           {activeView === 'chat' && (
             <ChatInterface
-              key={chatSessionId}
+              key={activeSessionId}
+              currentMessages={currentSession?.messages || []}
+              onSaveMessages={handleSaveMessages}
               onOpenExplorer={handleOpenExplorer}
               onTranscriptUploaded={loadData}
             />
