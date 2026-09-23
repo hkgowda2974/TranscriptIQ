@@ -55,8 +55,8 @@ A production-grade, grounded RAG application that ingests expert-call transcript
                                               │ Chunks with Metadata       │
                                               ▼                            │
                                ┌─────────────────────────┐                 │
-                               │  EMBEDDING ENGINE       │                 │
-                               │  Gemini text-embedding  │                 │
+                               │  EMBEDDING & RETRIEVAL  │                 │
+                               │  Local Semantic Search  │                 │
                                └──────────────┬──────────┘                 │
                                               │ Dense Vectors + Metadata   │
                                               ▼                            │
